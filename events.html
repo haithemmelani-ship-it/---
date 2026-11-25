@@ -438,6 +438,18 @@
         display: inline-block;
       }
     }
+
+    .alert-error {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    #submitBtn[disabled] { opacity: .7; cursor: wait; }
   </style>
 </head>
 <body>
@@ -604,20 +616,46 @@
           </p>
         </div>
 
-        <form class="card" id="joinForm">
+        <form class="card" id="joinForm" novalidate>
+          <!-- حقل مخفي لمنع الرسائل الآلية -->
+          <input type="text" name="_honey" id="honey" style="display:none" tabindex="-1" autocomplete="off" />
+
           <div class="form-group">
-            <label for="fullName">الاسم الكامل</label>
-            <input type="text" id="fullName" required placeholder="أدخل اسمك ولقبك" />
+            <label for="fullName">الاسم الكامل *</label>
+            <input type="text" id="fullName" name="الاسم الكامل" required placeholder="أدخل اسمك ولقبك" />
           </div>
 
           <div class="form-group">
-            <label for="faculty">الكلية / التخصص</label>
-            <input type="text" id="faculty" required placeholder="مثال: علوم وتكنولوجيا / آداب ولغات" />
+            <label for="email">البريد الإلكتروني *</label>
+            <input type="email" id="email" name="البريد الإلكتروني" required placeholder="example@gmail.com" dir="ltr" />
           </div>
 
           <div class="form-group">
-            <label for="pole">القطب المفضل</label>
-            <select id="pole" required>
+            <label for="phone">رقم الهاتف *</label>
+            <input type="tel" id="phone" name="رقم الهاتف" required placeholder="05XXXXXXXX" dir="ltr" pattern="[0-9+\s]{9,15}" />
+          </div>
+
+          <div class="form-group">
+            <label for="faculty">الكلية / التخصص *</label>
+            <input type="text" id="faculty" name="الكلية والتخصص" required placeholder="مثال: علوم وتكنولوجيا / آداب ولغات" />
+          </div>
+
+          <div class="form-group">
+            <label for="level">المستوى الدراسي *</label>
+            <select id="level" name="المستوى الدراسي" required>
+              <option value="">اختر المستوى</option>
+              <option>ليسانس - سنة أولى</option>
+              <option>ليسانس - سنة ثانية</option>
+              <option>ليسانس - سنة ثالثة</option>
+              <option>ماستر 1</option>
+              <option>ماستر 2</option>
+              <option>دكتوراه</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pole">القطب المفضل *</label>
+            <select id="pole" name="القطب المفضل" required>
               <option value="">اختر القطب</option>
               <option value="القطب العلمي والتقني">القطب العلمي والتقني</option>
               <option value="القطب الثقافي والأدبي">القطب الثقافي والأدبي</option>
@@ -627,13 +665,14 @@
 
           <div class="form-group">
             <label for="notes">مهاراتك أو ملاحظاتك</label>
-            <textarea id="notes" rows="3" placeholder="شاركنا اهتماماتك أو أفكارك..."></textarea>
+            <textarea id="notes" name="المهارات والملاحظات" rows="3" placeholder="شاركنا اهتماماتك أو أفكارك..."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary" style="width: 100%;">إرسال طلب الانضمام</button>
+          <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">إرسال طلب الانضمام</button>
           <div class="alert-success" id="formSuccess">
-            تم تسجيل طلبك مبدئياً بنجاح! يمكنك ربط هذا النموذج بقاعدة بيانات أو نموذج Google Forms لحفظ الطلبات تلقائياً.
+            ✅ تم إرسال طلبك بنجاح! سنتواصل معك قريباً عبر البريد الإلكتروني.
           </div>
+          <div class="alert-error" id="formError"></div>
         </form>
       </div>
     </div>
@@ -675,14 +714,26 @@
       });
     });
 
-    // Form Submission Demo
+    // إرسال الاستمارة إلى البريد الإلكتروني
+    const TARGET_EMAIL = "haithemmelani@gmail.com";
     const joinForm = document.getElementById('joinForm');
     const formSuccess = document.getElementById('formSuccess');
-    joinForm.addEventListener('submit', (e) => {
+    const formError = document.getElementById('formError');
+    const submitBtn = document.getElementById('submitBtn');
+
+    joinForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      formSuccess.style.display = 'block';
-      joinForm.reset();
-    });
-  </script>
-</body>
-  </html>
+      formSuccess.style.display = 'none';
+      formError.style.display = 'none';
+
+      if (!joinForm.checkValidity()) {
+        joinForm.reportValidity();
+        return;
+      }
+      if (document.getElementById('honey').value) return; // بوت
+
+      const fields = {};
+      new FormData(joinForm).forEach((v, k) => { if (k !== '_honey') fields[k] = v; });
+
+      const payload = Object.assign({
+        _subject: 'طلب انضمام جديد - نادي ال
