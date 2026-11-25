@@ -735,8 +735,8 @@
       if (document.getElementById('honey').value) return; // بوت
 
       const fields = {};
-      new FormData(joinForm).forEach((v, k) => { if (k !== '_honey') fields[k] = v; });
-
+      new FormData(joinForm).forEach(v, k)=> { if
+        
       const payload = Object.assign({
         _subject: 'طلب انضمام جديد - نادي الأثير: ' + fields['الاسم الكامل'],
         _template: 'table',
@@ -790,3 +790,4 @@
   </script>
 </body>
   </html>
+  
