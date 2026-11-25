@@ -716,6 +716,8 @@
 
     // إرسال الاستمارة إلى البريد الإلكتروني
     const TARGET_EMAIL = "haithemmelani@gmail.com";
+    // ضع هنا رابط Google Apps Script بعد نشره (يحفظ الطلبات في Google Sheets ويرسل إيميلاً)
+    const SHEETS_URL = "";
     const joinForm = document.getElementById('joinForm');
     const formSuccess = document.getElementById('formSuccess');
     const formError = document.getElementById('formError');
@@ -733,7 +735,59 @@
       if (document.getElementById('honey').value) return; // بوت
 
       const fields = {};
-      new FormData(joinForm).forEach((v, k) => { if (k !== '_honey') fields[k] = v; });
-
+      new FormData(joinForm).forEach((v, k) => { if
+        
       const payload = Object.assign({
-        _subject: 'طلب انضمام جديد - نادي ال
+        _subject: 'طلب انضمام جديد - نادي الأثير: ' + fields['الاسم الكامل'],
+        _template: 'table',
+        _captcha: 'false',
+        _replyto: fields['البريد الإلكتروني']
+      }, fields);
+
+      submitBtn.disabled = true;
+      const oldText = submitBtn.textContent;
+      submitBtn.textContent = 'جارٍ الإرسال...';
+
+      try {
+        if (SHEETS_URL) {
+          // حفظ في Google Sheets + إشعار بالبريد (عبر Apps Script)
+          await fetch(SHEETS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(fields)
+          });
+          formSuccess.style.display = 'block';
+          joinForm.reset();
+        } else {
+          const res = await fetch('https://formsubmit.co/ajax/' + TARGET_EMAIL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && (data.success === true || data.success === 'true')) {
+            formSuccess.style.display = 'block';
+            joinForm.reset();
+          } else {
+            throw new Error(data.message || 'failed');
+          }
+        }
+      } catch (err) {
+        // خطة بديلة: فتح تطبيق البريد برسالة جاهزة
+        const body = Object.entries(fields).map(([k, v]) => k + ': ' + v).join('\n');
+        const mailto = 'mailto:' + TARGET_EMAIL +
+          '?subject=' + encodeURIComponent(payload._subject) +
+          '&body=' + encodeURIComponent(body);
+        formError.innerHTML = 'تعذّر الإرسال التلقائي. <a href="' + mailto +
+          '" style="color:#991b1b;text-decoration:underline">اضغط هنا لإرسال الطلب عبر تطبيق البريد</a>.';
+        formError.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = oldText;
+      }
+    });
+  </script>
+</body>
+  </html>
+  
