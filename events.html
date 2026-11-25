@@ -675,52 +675,14 @@
       });
     });
 
-    // Form Submission -> Email (via FormSubmit)
-    const RECIPIENT_EMAIL = 'haithemmelani@gmail.com';
+    // Form Submission Demo
     const joinForm = document.getElementById('joinForm');
     const formSuccess = document.getElementById('formSuccess');
-    const submitBtn = joinForm.querySelector('button[type="submit"]');
-
-    joinForm.addEventListener('submit', async (e) => {
+    joinForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const originalText = submitBtn.textContent;
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'جارٍ الإرسال...';
-      formSuccess.style.display = 'none';
-
-      const payload = {
-        'الاسم الكامل': document.getElementById('fullName').value,
-        'الكلية / التخصص': document.getElementById('faculty').value,
-        'القطب المفضل': document.getElementById('pole').value,
-        'المهارات / الملاحظات': document.getElementById('notes').value,
-        _subject: 'طلب انضمام جديد - نادي الأثير',
-        _template: 'table',
-        _captcha: 'false'
-      };
-
-      try {
-        const res = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(RECIPIENT_EMAIL), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(() => ({}));
-        console.log('FormSubmit response:', res.status, data);
-        if (!res.ok || String(data.success) === 'false') {
-          throw new Error(data.message || ('HTTP ' + res.status));
-        }
-        formSuccess.textContent = 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.';
-        formSuccess.style.display = 'block';
-        joinForm.reset();
-      } catch (err) {
-        console.error('Form error:', err);
-        alert('تعذّر إرسال الطلب: ' + err.message);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-      }
+      formSuccess.style.display = 'block';
+      joinForm.reset();
     });
   </script>
 </body>
   </html>
-  
