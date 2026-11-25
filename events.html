@@ -704,12 +704,17 @@
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json().catch(() => ({}));
+        console.log('FormSubmit response:', res.status, data);
+        if (!res.ok || String(data.success) === 'false') {
+          throw new Error(data.message || ('HTTP ' + res.status));
+        }
         formSuccess.textContent = 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.';
         formSuccess.style.display = 'block';
         joinForm.reset();
       } catch (err) {
-        alert('تعذّر إرسال الطلب، يرجى المحاولة مرة أخرى لاحقاً.');
+        console.error('Form error:', err);
+        alert('تعذّر إرسال الطلب: ' + err.message);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
@@ -717,5 +722,5 @@
     });
   </script>
 </body>
-        </html>
-        
+  </html>
+  
